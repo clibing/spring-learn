@@ -1,0 +1,103 @@
+--> new ClassPathXmlApplicationContext("bean.xml")
+	// 加载了contextclosedevent类来避免在WebLogic 8.1应用程序关闭奇怪的类装载器的问题
+	--> static { ContextClosedEvent.class.getName(); }
+		--> this(new String[] {configLocation}, true, null): constructor
+			--> ClassPathXmlApplicationContext(String[] configLocations, boolean refresh, ApplicationContext parent) // (configLocations "bean.xml", refresh true parent null): constructor
+				--> AbstractXmlApplicationContext(): constructor  parent
+					--> AbstractRefreshableConfigApplicationContext(): constructor  parent
+                        --> AbstractApplicationContext(): constructor
+                            -->  getResourcePatternResolver()
+                                -->  new PathMatchingResourcePatternResolver(this): static块会检测当前classloader是为eclipse的classloader
+    --> setConfigLocations(configLocations); configLocations 为bean.xml
+    --> refresh();
+    ````java
+    	public void refresh() throws BeansException, IllegalStateException {
+    		synchronized (this.startupShutdownMonitor) {
+    			// 准备刷新上下文环境
+    			prepareRefresh();
+
+    			// 初始化BeanFactory，进行各种功能填充
+    			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+    			// 对BeanFactory进行各种填充
+    			prepareBeanFactory(beanFactory);
+
+    			try {
+    				// 子类覆盖方法做额外处理
+    				postProcessBeanFactory(beanFactory);
+
+    				// 激活各种BeanFactory处理器
+    				invokeBeanFactoryPostProcessors(beanFactory);
+
+    				// 注册拦截Bean创建的Bean处理器，这里这是注册，真正的调用是在getBean时候
+    				registerBeanPostProcessors(beanFactory);
+
+    				// 为上下文初始化Message源，即不同语言的消息体，国际化处理
+    				initMessageSource();
+
+    				// 初始化应用消息广播器，并放入"applicationEventMulticaster"Bean中
+    				initApplicationEventMulticaster();
+
+    				// 留给子类来初始化其他的Bean
+    				onRefresh();
+
+    				// 在所有注册的bean中查找Listener bean，注册到消息广播器中
+    				registerListeners();
+
+    				// 初始化剩下的单实例（非惰性的）
+    				finishBeanFactoryInitialization(beanFactory);
+
+    				// 完成刷新过程，通知生命周期处理器lifecycleProcessor刷新过程，同时发出ContextRefreshEvent通知别人
+    				finishRefresh();
+    			}
+
+    			catch (BeansException ex) {
+    				if (logger.isWarnEnabled()) {
+    					logger.warn("Exception encountered during context initialization - " +
+    							"cancelling refresh attempt: " + ex);
+    				}
+
+    				// Destroy already created singletons to avoid dangling resources.
+    				destroyBeans();
+
+    				// Reset 'active' flag.
+    				cancelRefresh(ex);
+
+    				// Propagate exception to caller.
+    				throw ex;
+    			}
+
+    			finally {
+    				// Reset common introspection caches in Spring's core, since we
+    				// might not ever need metadata for singleton beans anymore...
+    				resetCommonCaches();
+    			}
+    		}
+    	}
+    ````
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# add 
